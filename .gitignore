@@ -1,0 +1,7 @@
+#unnecassary dirs
+build/
+test/
+.cache/
+
+#personal files
+topics.txt
