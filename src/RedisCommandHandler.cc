@@ -1,5 +1,6 @@
 #include"../include/RedisCommandHandler.hpp"
 
+#include<iostream>
 #include <algorithm>
 #include <cstddef>
 #include <sstream>
@@ -68,6 +69,12 @@ std::string RedisCommandHandler::processCommand(const command& cmdLine)
     std::vector<std::string> tokens = getRespTokens(cmdLine);
 
     if(tokens.empty()) return "-Error: empty command\r\n";
+
+    for(auto& t: tokens)
+    {
+        std::cout<<t<<'\n';
+    }
+
 
     std::string cmd = tokens[0];
     std::transform(cmd.begin(),cmd.end(),cmd.begin(),::toupper);

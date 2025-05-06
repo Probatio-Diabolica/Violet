@@ -1,10 +1,14 @@
 #include "../include/RedisServer.hpp"
+#include "RedisCommandHandler.hpp"
 
 #include <asm-generic/socket.h>
+#include <cstring>
 #include <iostream>
+#include <thread>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include<vector>
 
 static RedisServer* g_server = nullptr;
 
@@ -48,6 +52,49 @@ void RedisServer::run()
     }
 
     std::cout<<"Serter started listening on port" << m_port <<'\n';
+
+    std::vector<std::thread> clientThreads;
+    RedisCommandHandler cmdHandler;
+
+    while(m_running)
+    {
+        int clientFd = accept(m_sockfd,nullptr ,nullptr  );
+        if(clientFd < 0) //the socket is not connect :(
+        {
+            if(m_running) std::cerr<<"Error accepting client connection\n";
+            break;
+        }
+        clientThreads.emplace_back([clientFd,&cmdHandler]()
+        {
+            //lambda for thread
+
+            // using C string gives better performance than std::string.
+            // std::string buffer;
+            // buffer.resize(1024);
+            // while(true)
+            // {
+            //     std::fill(buffer.begin(),buffer.end(),0);
+            // }
+
+            char buffer[1024]; //buffersize 1 KB
+            while(true)
+            {
+                // std::fill(buffer.begin(),buffer.end(),0);
+                memset(buffer, 0, sizeof(buffer));
+                int bytes = recv(clientFd, buffer, sizeof(buffer)-1,0);
+                if(bytes <= 0) break;
+                std::string request(buffer,bytes);
+                std::string response = cmdHandler.processCommand(request);
+                send(clientFd,response.c_str(),response.size(),0);
+            }
+            close(clientFd);
+        });
+
+        for(auto& t: clientThreads)
+        {
+            if(t.joinable())t.join();
+        }
+    }
 }
 
 
