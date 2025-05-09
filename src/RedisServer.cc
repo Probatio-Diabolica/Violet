@@ -1,22 +1,42 @@
 #include "../include/RedisServer.hpp"
-#include "RedisCommandHandler.hpp"
+#include "../include/RedisCommandHandler.hpp"
+#include "../include/RedisDB.hpp"
 
 #include <asm-generic/socket.h>
+#include <csignal>
 #include <cstring>
 #include <iostream>
 #include <thread>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include<signal.h>
 #include<vector>
 
 static RedisServer* g_server = nullptr;
+
+static void signalHandler(int signum)
+{
+    if(g_server)
+    {
+        std::cout<<"Caught the signal "<<signum<< "Shutting down \n";
+        g_server->shutdown();
+    }
+    exit(signum);
+}
+
+
+void RedisServer::setupSignalHandler()
+{
+    signal(SIGINT, signalHandler);
+}
 
 
 RedisServer::RedisServer(int port) 
     : m_port(port),m_sockfd(-1),m_running(true)
 {
     g_server = this;
+    setupSignalHandler();
 }
 
 void RedisServer::run()
@@ -89,12 +109,16 @@ void RedisServer::run()
             }
             close(clientFd);
         });
-
-        for(auto& t: clientThreads)
-        {
-            if(t.joinable())t.join();
-        }
     }
+
+    for(auto& t: clientThreads)
+    {
+        if(t.joinable())t.join();
+    }
+
+    //save the data before shutting down
+    if(RedisDB::getInstance().dump("dump.dbz")) std::cout<<"DB dumped to dump.dbs\n";
+    else std::cerr<<"Error dumping\n";
 }
 
 

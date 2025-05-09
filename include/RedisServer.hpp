@@ -14,6 +14,10 @@ private:
     int m_port;
     int m_sockfd;
     std::atomic<bool> m_running;
+
+    void setupSignalHandler();
 };
+
+
 
 #endif
