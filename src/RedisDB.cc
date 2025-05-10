@@ -17,12 +17,12 @@ bool RedisDB::dump(const std::string& fileName)
     std::ofstream ofs(fileName,std::ios::binary);
     if(!ofs) return false;
 
-    for(const auto& [key,value]: kv_store)
+    for(const auto& [key,value]: m_kvStore)
     {
         ofs<<'K' << key << ' ' << value << '\n';
     }
 
-    for(const auto& [key,value] :  list_store)
+    for(const auto& [key,value] :  m_listStore)
     {
         ofs << 'L' << key;
         for(const auto& item : value )
@@ -32,7 +32,7 @@ bool RedisDB::dump(const std::string& fileName)
         ofs << '\n';
     }
 
-    for(const auto& [key,value] : hash_store)
+    for(const auto& [key,value] : m_hashStore)
     {
         ofs << 'H' <<key;
         for(const auto& [subKey,subValue] : value)
@@ -50,9 +50,9 @@ bool RedisDB::load(const std::string& filename)
     std::ifstream ifs(filename,std::ios::binary);
     if(!ifs) return false;
 
-    kv_store.clear();
-    list_store.clear();
-    hash_store.clear();
+    m_kvStore.clear();
+    m_listStore.clear();
+    m_hashStore.clear();
 
     std::string line;
 

@@ -27,9 +27,9 @@ private:
 
     std::mutex db_mutex;
     
-    std::unordered_map<std::string ,std::string> kv_store;
-    std::unordered_map<std::string, std::vector<std::string>> list_store; 
-    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> hash_store;
+    std::unordered_map<std::string ,std::string> m_kvStore;
+    std::unordered_map<std::string, std::vector<std::string>> m_listStore; 
+    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_hashStore;
 
 };
 
