@@ -25,7 +25,8 @@ private:
     RedisDB(const RedisDB&)             = delete;
     RedisDB& operator=(const RedisDB&)  = delete;
 
-    std::mutex db_mutex;
+private:
+    std::mutex m_dbMutex;
     
     std::unordered_map<std::string ,std::string> m_kvStore;
     std::unordered_map<std::string, std::vector<std::string>> m_listStore; 
