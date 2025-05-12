@@ -18,6 +18,10 @@ public:
     //if successful, return true
     [[nodiscard]] bool load(const std::string& filename);
 
+    void flushAll();
+    void set(const std::string& key, const std::string& value);
+    void get(const std::string& key, const std::string& value);
+    std::vector<std::string>& keys();
 private:
     RedisDB()  = default;
     ~RedisDB() = default;

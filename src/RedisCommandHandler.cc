@@ -1,5 +1,5 @@
 #include"../include/RedisCommandHandler.hpp"
-#include "RedisDB.hpp"
+#include "../include/RedisDB.hpp"
 
 #include <iostream>
 #include <algorithm>
@@ -86,12 +86,26 @@ std::string RedisCommandHandler::processCommand(const command& cmdLine)
 
 
     //Checking commands
-    if(cmd=="ping") response << "+pong\r\n";
-    else if(cmd == "echo")
+    if(cmd=="PING") 
+        response << "+pong\r\n";
+    else if(cmd == "ECHO")
     {
-
+        if(tokens.size() > 1) response<<"+"<<tokens[1]<<"\r\n";
     }
-    else response<< "error: unknown command \r\n";
+    else if(cmd == "FLUSHALL")
+    {
+        db.flushAll();
+        response<<"+OK\r\n";
+    } 
+    else if(cmd == "SET") //key - value ops
+    {
+        if(tokens.size()<3) response<<"-Error: SET requires key and value\r\n";
+        else{
+            db.set(tokens[1],tokens[2]);
+        }
+    }
+    else    
+        response<< "error: unknown command \r\n";
 
     // todo : key value ops
     // todo : Hash ops

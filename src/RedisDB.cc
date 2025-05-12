@@ -16,8 +16,15 @@ RedisDB& RedisDB::getInstance()
 
 
 
+void RedisDB::flushAll()
+{
 
+}
 
+void RedisDB::set(const std::string& key, const std::string& value)
+{
+
+}
 
 
 bool RedisDB::dump(const std::string& fileName)
@@ -98,7 +105,7 @@ bool RedisDB::load(const std::string& filename)
             }
             m_listStore[key]=list;
         }
-        else if(type=='H')
+        else if(type == 'H')
         {
             std::string key;
             iss >> key;
