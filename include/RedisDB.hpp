@@ -19,15 +19,24 @@ public:
     [[nodiscard]] bool load(const std::string& filename);
 
     void flushAll();
+    
+    //Key/value
     void set(const std::string& key, const std::string& value);
-    void get(const std::string& key, const std::string& value);
+    [[nodiscard]] bool get(const std::string& key, const std::string& value);
     std::vector<std::string>& keys();
+    std::string type(const std::string& key);
+    bool del(const std::string& key);
+
+
 private:
     RedisDB()  = default;
     ~RedisDB() = default;
 
     RedisDB(const RedisDB&)             = delete;
     RedisDB& operator=(const RedisDB&)  = delete;
+
+
+
 
 private:
     std::mutex m_dbMutex;

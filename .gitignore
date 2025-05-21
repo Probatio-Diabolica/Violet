@@ -2,6 +2,7 @@
 build/
 test/
 .cache/
+.vs
 
 #personal files
 topics.txt

@@ -102,6 +102,46 @@ std::string RedisCommandHandler::processCommand(const command& cmdLine)
         if(tokens.size()<3) response<<"-Error: SET requires key and value\r\n";
         else{
             db.set(tokens[1],tokens[2]);
+            response << "+OK\r\n";
+        }
+    }
+    else if(cmd == "GET")
+    {
+        if(tokens.size() < 2)
+        {
+            response << "-Error: GET requires key and values\r\n";
+        }else 
+        {
+            std::string value;
+            if(db.get(tokens[1], value) ) response << "$" << value.size() << "\r\n" <<value << "\r\n";
+            else response << "$-1\r\n";
+        }
+    }
+    else if(cmd == "KEYS")
+    {
+        std::vector<std::string> altkeys = db.keys();
+        response << "*" << altkeys.size() << "\r\n";
+        for(const std::string& key: altkeys)
+        {
+            response << "$" << key.size() <<"\r\n" << key << "\r\n";
+        }
+    }
+    else if(cmd == "TYPE")
+    {
+        if(tokens.size() < 2)
+            response << "-Error: TYPE requires key\r\n";
+        else 
+        {
+            response << "+" << db.type(tokens[1])<<"\r\n";
+        }
+    }
+    else if(cmd =="DEL" || cmd =="UNLINK")
+    {
+        if(tokens.size() < 2)
+        response << "-Error: " <<cmd <<" requires key \r\n";
+        else
+        {
+
         }
     }
     else    

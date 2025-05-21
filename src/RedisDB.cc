@@ -6,6 +6,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 RedisDB& RedisDB::getInstance()
 {
@@ -26,6 +27,17 @@ void RedisDB::set(const std::string& key, const std::string& value)
 
 }
 
+bool RedisDB::get(const std::string& key, const std::string& value)
+{
+    return true;
+}
+
+std::vector<std::string>& RedisDB::keys()
+{
+    std::vector<std::string> b;
+    std::vector<std::string>& s = b;
+    return s;
+}
 
 bool RedisDB::dump(const std::string& fileName)
 {
