@@ -1,5 +1,6 @@
 #unnecassary dirs
 build/
+out/
 test/
 .cache/
 .vs

@@ -69,7 +69,7 @@ std::string RedisCommandHandler::processCommand(const command& cmdLine)
     //get the tokens
     std::vector<std::string> tokens = getRespTokens(cmdLine);
 
-    if(tokens.empty()) return "-Error: empty command\r\n";
+   if(tokens.empty()) return "-Error: empty command\r\n";
 
     // for(auto& t: tokens)
     // {
@@ -131,17 +131,42 @@ std::string RedisCommandHandler::processCommand(const command& cmdLine)
         if(tokens.size() < 2)
             response << "-Error: TYPE requires key\r\n";
         else 
-        {
             response << "+" << db.type(tokens[1])<<"\r\n";
-        }
+        
     }
     else if(cmd =="DEL" || cmd =="UNLINK")
     {
         if(tokens.size() < 2)
-        response << "-Error: " <<cmd <<" requires key \r\n";
+            response << "-Error: " <<cmd <<" requires key \r\n";
         else
         {
-
+            bool res = db.del(tokens[1]);
+            response << ":" << (res ? 1 : 0) << "\r\n";
+        }
+    }
+    else if(cmd=="EXPIRE")
+    {
+        if(tokens.size() < 3)
+            response << "Expire requires key and time in seconds\r\n";
+        else
+        {
+            int seconds = std::stoi(tokens[2]);
+            if(db.expire(tokens[1],seconds))
+                response << "+OK\r\n";
+            else 
+                response << "\r\n";
+        }
+    }
+    else if(cmd=="RENAME")
+    {
+        if(tokens.size()  < 3)
+            response << "-Error: RENAME missing key value names";
+        else
+        {
+            if(db.rename(tokens[1],tokens[2]))
+                response << "+OK\r\n";
+            else
+             response << "\r\n";
         }
     }
     else    

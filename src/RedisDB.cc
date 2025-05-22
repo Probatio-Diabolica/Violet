@@ -1,5 +1,6 @@
 #include "../include/RedisDB.hpp"
 
+#include <chrono>
 #include <sstream>
 #include <fstream>
 #include <ios>
@@ -19,24 +20,141 @@ RedisDB& RedisDB::getInstance()
 
 void RedisDB::flushAll()
 {
-
+    std::lock_guard<std::mutex> lock(m_dbMutex);
+    m_kvStore.clear();
+    m_listStore.clear();
+    m_hashStore.clear();
 }
 
 void RedisDB::set(const std::string& key, const std::string& value)
 {
-
+    std::lock_guard<std::mutex> lock(m_dbMutex);
+    m_kvStore[key]= value;
 }
 
-bool RedisDB::get(const std::string& key, const std::string& value)
+bool RedisDB::get(const std::string& key, std::string& value)
 {
-    return true;
+    std::lock_guard<std::mutex> lock(m_dbMutex);
+    auto it  = m_kvStore.find(key);
+    if(it!=m_kvStore.end())
+    {
+        value = it->second;
+        return true;
+    }
+    return false;
 }
 
-std::vector<std::string>& RedisDB::keys()
+
+
+std::vector<std::string> RedisDB::keys()
 {
-    std::vector<std::string> b;
-    std::vector<std::string>& s = b;
-    return s;
+    std::lock_guard<std::mutex> lock(m_dbMutex);
+    std::vector<std::string> out;
+    
+    //keys from key value store
+    for(const auto& [key,value] : m_kvStore)
+    {
+        out.push_back(key);
+    }
+
+    //keys from hash store
+    for(const auto& [key,value] : m_hashStore)
+    {
+        out.push_back(key);
+    }
+    //keys from list store 
+    for(const auto& [key,value] : m_listStore)
+    {
+        out.push_back(key);
+    }
+    return out;
+}
+
+
+
+    
+std::string RedisDB::type(const std::string& key)
+{
+    std::lock_guard<std::mutex> lock(m_dbMutex);
+    
+    if(m_kvStore.find(key) != m_kvStore.end())
+        return "string";
+    
+
+    if(m_listStore.find(key) != m_listStore.end())
+        return "list";
+    
+
+    if(m_hashStore.find(key) != m_hashStore.end())
+        return "hash";
+    
+    return "none";
+}
+    
+bool RedisDB::del(const std::string& key)
+{
+    std::lock_guard<std::mutex> lock(m_dbMutex);
+    bool erased = false;
+    erased |= m_kvStore.erase(key) > 0 ;
+    erased |= m_hashStore.erase(key) > 0 ;
+    erased |= m_listStore.erase(key) > 0 ;
+    return false;
+
+}
+    
+bool RedisDB::expire(const std::string& key, int seconds)
+{
+    std::lock_guard<std::mutex> lock(m_dbMutex);
+    bool exists = (m_kvStore.find(key)    != m_kvStore.end()) 
+                  or (m_hashStore.find(key)  != m_hashStore.end()) 
+                  or (m_listStore.find(key)  != m_listStore.end()) ;
+    if(exists)
+    {
+        m_expiryMap[key] = std::chrono::steady_clock::now() + std::chrono::seconds(seconds);
+        return true;
+    }
+    return false;
+}
+    
+bool RedisDB::rename(const std::string& oldKey, const std::string& newKey)
+{
+    std::lock_guard<std::mutex> lock(m_dbMutex);
+    bool found = false;
+
+    auto oldKV = m_kvStore.find(oldKey);
+    if(oldKV != m_kvStore.end())
+    {
+        m_kvStore[newKey] = oldKV->second;
+        m_kvStore.erase(oldKV);
+        found = true;
+    }
+    
+    auto oldHash = m_hashStore.find(oldKey);
+    if(oldHash != m_hashStore.end())
+    {
+        m_hashStore[newKey] = oldHash->second;
+        m_hashStore.erase(oldHash);
+        found = true;
+    }
+    
+   auto oldList = m_listStore.find(oldKey);
+    if(oldList != m_listStore.end())
+    {
+        m_listStore[newKey] = oldList->second;
+        m_listStore.erase(oldList);
+        found = true;
+    }
+
+   auto oldExpire = m_expiryMap.find(oldKey);
+    if(oldExpire != m_expiryMap.end())
+    {
+        m_expiryMap[newKey] = oldExpire->second;
+        m_expiryMap.erase(oldExpire);
+        found = true;
+    }
+ 
+
+    return found;
 }
 
 bool RedisDB::dump(const std::string& fileName)
