@@ -11,6 +11,11 @@ int main(int argc, char* argv[])
 {
     int port=2005;
     if(argc >= 2) port = std::stoi(argv[1]);
+    
+    if(RedisDB::getInstance().load("dump.dbz"))
+        std::cout << "Database loaded from dump.dbz\n";
+    else  std::cout << "No dump found\n";
+
     RedisServer server(port);
     std::cout<<"Chosen port was "<<port<<"\n";
 

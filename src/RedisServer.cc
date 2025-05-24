@@ -117,7 +117,7 @@ void RedisServer::run()
     }
 
     //save the data before shutting down
-    if(RedisDB::getInstance().dump("dump.dbz")) std::cout<<"DB dumped to dump.dbs\n";
+    if(RedisDB::getInstance().dump("dump.dbz")) std::cout<<"DB dumped to dump.dbz\n";
     else std::cerr<<"Error dumping\n";
 }
 
@@ -126,8 +126,14 @@ void RedisServer::shutdown()
 {
     m_running = false;
 
-    if(m_sockfd==-1) close(m_sockfd);
+    if(m_sockfd==-1)
+    {
 
+        if(RedisDB::getInstance().load("dump.dbz"))
+            std::cout << "Database loaded from dump.dbz\n";
+        else std::cout << "Cannot dump to dump.dbz\n";
+    close(m_sockfd);
+    }
     std::cout<<"Server shutdown gracefully\n";
 }
 
