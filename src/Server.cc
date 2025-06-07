@@ -1,6 +1,6 @@
-#include "../include/RedisServer.hpp"
-#include "../include/RedisCommandHandler.hpp"
-#include "../include/RedisDB.hpp"
+#include "../include/Server.hpp"
+#include "../include/RESPCommandHandler.hpp"
+#include "../include/VioletDB.hpp"
 
 #include <asm-generic/socket.h>
 #include <csignal>
@@ -13,7 +13,7 @@
 #include<signal.h>
 #include<vector>
 
-static RedisServer* g_server = nullptr;
+static Server* g_server = nullptr;
 
 static void signalHandler(int signum)
 {
@@ -22,24 +22,25 @@ static void signalHandler(int signum)
         std::cout<<"Caught the signal "<<signum<< "Shutting down \n";
         g_server->shutdown();
     }
+
     exit(signum);
 }
 
 
-void RedisServer::setupSignalHandler()
+void Server::setupSignalHandler()
 {
     signal(SIGINT, signalHandler);
 }
 
 
-RedisServer::RedisServer(int port) 
+Server::Server(int port) 
     : m_port(port),m_sockfd(-1),m_running(true)
 {
     g_server = this;
     setupSignalHandler();
 }
 
-void RedisServer::run()
+void Server::run()
 {
     m_sockfd = socket(AF_INET,SOCK_STREAM,0);
     if(m_sockfd < 0)
@@ -74,7 +75,7 @@ void RedisServer::run()
     std::cout<<"Serter started listening on port" << m_port <<'\n';
 
     std::vector<std::thread> clientThreads;
-    RedisCommandHandler cmdHandler;
+    RESPCommandHandler cmdHandler;
 
     while(m_running)
     {
@@ -117,28 +118,30 @@ void RedisServer::run()
     }
 
     //save the data before shutting down
-    if(RedisDB::getInstance().dump("dump.dbz")) std::cout<<"DB dumped to dump.dbz\n";
+    if(VioletDB::getInstance().dump("dump.dbz")) std::cout<<"DB dumped to dump.dbz\n";
     else std::cerr<<"Error dumping\n";
 }
 
 
-void RedisServer::shutdown()
+void Server::shutdown()
 {
     m_running = false;
 
     if(m_sockfd==-1)
     {
-
-        if(RedisDB::getInstance().load("dump.dbz"))
+        if(VioletDB::getInstance().load("dump.dbz"))
             std::cout << "Database loaded from dump.dbz\n";
-        else std::cout << "Cannot dump to dump.dbz\n";
-    close(m_sockfd);
+        else 
+            std::cout << "Cannot dump to dump.dbz\n";
+   
+        close(m_sockfd);
     }
+
     std::cout<<"Server shutdown gracefully\n";
 }
 
 
-RedisServer::~RedisServer()
+Server::~Server()
 {
 
 }

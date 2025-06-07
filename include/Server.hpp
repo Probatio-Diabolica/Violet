@@ -1,20 +1,25 @@
-#ifndef REDIS_SERVER_HPP
-#define REDIS_SERVER_HPP
+#ifndef SERVER_HPP
+#define SERVER_HPP
 #include <atomic>
 
 
-class RedisServer
+class Server
 {
 public:
-    RedisServer(int port);
+    Server(int port);
+    
     void run();
+    
     void shutdown();
-    ~RedisServer();
+    
+    ~Server();
+
 private:
     int m_port;
     int m_sockfd;
     std::atomic<bool> m_running;
 
+    //sets up  signal handling for  graceful shutdown
     void setupSignalHandler();
 };
 

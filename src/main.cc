@@ -1,5 +1,5 @@
-#include "../include/RedisServer.hpp"
-#include "../include/RedisDB.hpp"
+#include "../include/Server.hpp"
+#include "../include/VioletDB.hpp"
 
 
 #include<iostream>
@@ -12,11 +12,11 @@ int main(int argc, char* argv[])
     int port=2005;
     if(argc >= 2) port = std::stoi(argv[1]);
     
-    if(RedisDB::getInstance().load("dump.dbz"))
+    if(VioletDB::getInstance().load("dump.dbz"))
         std::cout << "Database loaded from dump.dbz\n";
     else  std::cout << "No dump found\n";
 
-    RedisServer server(port);
+    Server server(port);
     std::cout<<"Chosen port was "<<port<<"\n";
 
     // dump the database every 300 seconds
@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
         {
             std::this_thread::sleep_for(std::chrono::seconds(300));
             //!! dump the database here
-            if(RedisDB::getInstance().dump("dump.dbz")) std::cout<<"Database Dumped\n";
+            if(VioletDB::getInstance().dump("dump.dbz")) std::cout<<"Database Dumped\n";
             else std::cerr<<"Error dumping the database\n";
         }
     });
