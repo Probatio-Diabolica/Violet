@@ -1,7 +1,24 @@
 # Voilet 
 Voilet is an in-memory key–value database, which can be used as a distributed cache and message broker, with optional durability.
 ```Note : Under progress```
-# Features
+# Misc Commands:
+
+-status:
+
+-echo:
+
+-flushall
+
+# Key - Value operations:
+
+- set
+
+- get
+
+- keys
+
+- type
+
 
 # Build
 To build, 

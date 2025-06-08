@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     {
         while(true)
         {
-            std::this_thread::sleep_for(std::chrono::seconds(300));
+            std::this_thread::sleep_for(std::chrono::seconds(30));
             //!! dump the database here
             if(VioletDB::getInstance().dump("dump.dbz")) std::cout<<"Database Dumped\n";
             else std::cerr<<"Error dumping the database\n";

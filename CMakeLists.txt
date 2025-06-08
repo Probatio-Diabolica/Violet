@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(Voilet LANGUAGES CXX)
+project(Violet LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,8 +13,8 @@ file(GLOB_RECURSE SOURCE_FILES
     src/*.cc
 )
 
-add_executable(voilet ${SOURCE_FILES})
+add_executable(violet ${SOURCE_FILES})
 
-target_include_directories(voilet PRIVATE include)
+target_include_directories(violet PRIVATE include)
 
-target_compile_options(voilet PRIVATE -O3 -march=native -Wall -Wextra)
+target_compile_options(violet PRIVATE -O3 -march=native -Wall -Wextra)

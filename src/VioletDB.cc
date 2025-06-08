@@ -161,12 +161,12 @@ bool VioletDB::dump(const std::string& fileName)
 
     for(const auto& [key,value]: m_kvStore)
     {
-        ofs<<'K' << key << ' ' << value << '\n';
+        ofs<<"K " << key << ' ' << value << '\n';
     }
 
     for(const auto& [key,value] :  m_listStore)
     {
-        ofs << 'L' << key;
+        ofs << "L " << key;
         for(const auto& item : value )
         {
             ofs << ' ' << item;
@@ -176,7 +176,7 @@ bool VioletDB::dump(const std::string& fileName)
 
     for(const auto& [key,value] : m_hashStore)
     {
-        ofs << 'H' <<key;
+        ofs << "H " <<key;
         for(const auto& [subKey,subValue] : value)
         {
             ofs << ' '<< subKey << ':' <<subValue;

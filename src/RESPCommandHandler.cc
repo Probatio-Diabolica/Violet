@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,7 +15,7 @@
 //handling status
 static std::string status(std::vector<std::string>& tokens, VioletDB& db)
 {
-   return "+Service: [Online]\r\n"; 
+   return "+service: [online]\r\n"; 
 }
 
 
@@ -70,15 +69,16 @@ static std::string keys(std::vector<std::string>& tokens,VioletDB& db)
     std::string newKey = '*' + std::to_string(altKeys.size()) + "\r\n";
     for(const std::string& key : altKeys)
     {
-        newKey +=  ('$' + std::to_string(altKeys.size()) + "\r\n");
+        newKey +=  '$' + std::to_string(key.size()) + "\r\n" + key + "\r\n";
     }
+
     return newKey;
 }
 
 
 static std::string type(std::vector<std::string>& tokens,VioletDB& db)
 {
-    if(tokens.size()) return "-error: Type requires key\r\n";
+    if(tokens.size() < 2) return "-error: Type requires key\r\n";
     else return '+' + db.type(tokens[1])+"\r\n";
 }
 
@@ -146,9 +146,11 @@ static std::string listLength(const std::vector<std::string>& tokens, VioletDB& 
 //appends one or more values to a list, then returns the lenght in RESP integer
 static std::string listPushFront(const std::vector<std::string>& tokens, VioletDB& db)
 {
+    if(tokens.size() < 2) return "-error: missing <key> <value>\r\n";
+
     if(tokens.size() < 3) return "-error: missing <value>\r\n"; 
     
-    if(tokens.size() < 2) return "-error: missing <key>\r\n";
+
 
     const auto& key = tokens[1];
     for(size_t i = 2; i<tokens.size();++i)
@@ -162,7 +164,7 @@ static std::string listPushFront(const std::vector<std::string>& tokens, VioletD
 //appends one or more values to a list, then returns the length in RESP integer 
 static std::string listPushBack(const std::vector<std::string>& tokens, VioletDB& db)
 {
-    if(tokens.size() < 2) return "-error: missing <key>\r\n";
+    if(tokens.size() < 2) return "-error: missing <key> <value>\r\n";
     
     if(tokens.size() < 3) return "-error: missing <value>\r\n";
 
@@ -435,14 +437,16 @@ std::string RESPCommandHandler::processCommand(const command& cmdLine)
     //get the tokens
     std::vector<std::string> tokens = getRespTokens(cmdLine);
 
-   if(tokens.empty()) return "-error: empty command\r\n";
+    if(tokens.empty()) return "-error: empty command\r\n";
 
-    std::string cmd = tokens[0];
+    command cmd = tokens[0];
+        
     std::transform(cmd.begin(),cmd.end(),cmd.begin(),::toupper);
     std::ostringstream response;
 
     //Connecting to the database
     VioletDB& db = VioletDB::getInstance();
+
 
 
     //Checking commands
@@ -507,7 +511,7 @@ std::string RESPCommandHandler::processCommand(const command& cmdLine)
     
     else if (cmd == "HMSET") return processHashMultiSet(tokens, db);
 
-    else response<< "-error: unknown command \r\n";
+    else response<< "unknown command \r\n";
 
     return response.str();
 }

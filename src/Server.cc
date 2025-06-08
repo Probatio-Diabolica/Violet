@@ -72,7 +72,7 @@ void Server::run()
         return;
     }
 
-    std::cout<<"Serter started listening on port" << m_port <<'\n';
+    std::cout<<"Serter started listening on port: " << m_port <<'\n';
 
     std::vector<std::thread> clientThreads;
     RESPCommandHandler cmdHandler;
@@ -89,14 +89,6 @@ void Server::run()
         {
             //lambda for thread
 
-            // using C string gives better performance than std::string.
-            // std::string buffer;
-            // buffer.resize(1024);
-            // while(true)
-            // {
-            //     std::fill(buffer.begin(),buffer.end(),0);
-            // }
-
             char buffer[1024]; //buffersize 1 KB
             while(true)
             {
@@ -105,7 +97,9 @@ void Server::run()
                 int bytes = recv(clientFd, buffer, sizeof(buffer)-1,0);
                 if(bytes <= 0) break;
                 std::string request(buffer,bytes);
+                
                 std::string response = cmdHandler.processCommand(request);
+                
                 send(clientFd,response.c_str(),response.size(),0);
             }
             close(clientFd);
@@ -114,7 +108,7 @@ void Server::run()
 
     for(auto& t: clientThreads)
     {
-        if(t.joinable())t.join();
+        if(t.joinable())  t.join();
     }
 
     //save the data before shutting down
