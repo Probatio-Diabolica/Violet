@@ -52,12 +52,14 @@ static std::string set(std::vector<std::string>& tokens,VioletDB& db)
 static std::string get(std::vector<std::string>& tokens,VioletDB& db)
 {
     if(tokens.size() < 2) return "-error: GET command requires <key>\r\nUsage: GET mykey\r\n";
-
     else
     {
         std::string value;
-        if(db.get(tokens[2],value)) return '$' + value.length() + "\r\n" + value + "\r\n";
-        else return "$-1\r\n";
+        if(db.get(tokens[1],value)) 
+        {
+            return '$' + std::to_string(value.length()) + "\r\n" + value + "\r\n";
+        }
+        return "$-1\r\n";
         
     }
 }
@@ -158,7 +160,7 @@ static std::string listPushFront(const std::vector<std::string>& tokens, VioletD
         db.lpush(key, tokens[i]);
     }
 
-    return ':' + std::to_string(db.llen(key));
+    return ':' + std::to_string(db.llen(key)) + "\r\n";
 }
 
 //appends one or more values to a list, then returns the length in RESP integer 
@@ -172,7 +174,7 @@ static std::string listPushBack(const std::vector<std::string>& tokens, VioletDB
 
     for(size_t i =2 ; i < tokens.size(); ++i)
     {
-        db.lpush(key, tokens[i]);
+        db.rpush(key, tokens[i]);
     }
 
     return ':' + std::to_string(db.llen(key)) + "\r\n";
@@ -205,7 +207,7 @@ static std::string listPopBack(const std::vector<std::string>& tokens, VioletDB&
 //removes all occurances of a value, then returns the count of number of elements removed in RESP integer 
 static std::string listRemoveOccurrences(const std::vector<std::string>& tokens, VioletDB& db)
 {
-    if(tokens.size()) return "-error: missing <key> <count> <value>\r\n";
+    if(tokens.size() < 2) return "-error: missing <key> <count> <value>\r\n";
 
     try
     {
@@ -442,12 +444,9 @@ std::string RESPCommandHandler::processCommand(const command& cmdLine)
     command cmd = tokens[0];
         
     std::transform(cmd.begin(),cmd.end(),cmd.begin(),::toupper);
-    std::ostringstream response;
 
     //Connecting to the database
     VioletDB& db = VioletDB::getInstance();
-
-
 
     //Checking commands
     if(cmd=="STATUS")  return status(tokens,db);
@@ -511,7 +510,5 @@ std::string RESPCommandHandler::processCommand(const command& cmdLine)
     
     else if (cmd == "HMSET") return processHashMultiSet(tokens, db);
 
-    else response<< "unknown command \r\n";
-
-    return response.str();
+    else return "-error: unknown command \r\n";
 }

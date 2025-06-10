@@ -35,6 +35,8 @@ public:
     
     [[nodiscard]]bool rename(const std::string& oldKey, const std::string& newKey);
 
+    void evictExpiredKeys();
+
     //List ops
     std::vector<std::string> lget(const std::string& key);
     

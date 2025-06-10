@@ -1,9 +1,11 @@
 #include "../include/VioletDB.hpp"
-
+#include<iostream>
+#include <chrono>
 #include <iterator>
 #include <sstream>
 #include <fstream>
 #include <ios>
+#include <vector>
 
 VioletDB& VioletDB::getInstance()
 {
@@ -31,12 +33,14 @@ void VioletDB::set(const std::string& key, const std::string& value)
 bool VioletDB::get(const std::string& key, std::string& value)
 {
     std::lock_guard<std::mutex> lock(m_dbMutex);
-    auto it  = m_kvStore.find(key);
-    if(it!=m_kvStore.end())
+    evictExpiredKeys();
+    
+    if(const auto it = m_kvStore.find(key); it != m_kvStore.end())
     {
-        value = it->second;
+        value = it ->second;
         return true;
     }
+
     return false;
 }
 
@@ -45,6 +49,8 @@ bool VioletDB::get(const std::string& key, std::string& value)
 std::vector<std::string> VioletDB::keys()
 {
     std::lock_guard<std::mutex> lock(m_dbMutex);
+    evictExpiredKeys();
+
     std::vector<std::string> out;
     
     //keys from key value store
@@ -66,12 +72,29 @@ std::vector<std::string> VioletDB::keys()
     return out;
 }
 
+void VioletDB::evictExpiredKeys()
+{
+    auto now = std::chrono::steady_clock::now();
 
+    std::erase_if(m_expiryMap,[&](const auto& expired)
+    {
+        const auto& [expiredKey,time] = expired;
+        if(now > time)
+        {
+            m_kvStore.erase(expiredKey);
+            m_listStore.erase(expiredKey);
+            m_hashStore.erase(expiredKey);
+            return true;
+        }
+        return false;
+    });
+}
 
     
 std::string VioletDB::type(const std::string& key)
 {
     std::lock_guard<std::mutex> lock(m_dbMutex);
+    evictExpiredKeys();
     
     if(m_kvStore.find(key) != m_kvStore.end())
         return "string";
@@ -90,6 +113,8 @@ std::string VioletDB::type(const std::string& key)
 bool VioletDB::del(const std::string& key)
 {
     std::lock_guard<std::mutex> lock(m_dbMutex);
+    evictExpiredKeys();
+
     bool erased = false;
     erased |= m_kvStore.erase(key) > 0 ;
     erased |= m_hashStore.erase(key) > 0 ;
@@ -101,6 +126,8 @@ bool VioletDB::del(const std::string& key)
 bool VioletDB::expire(const std::string& key, int seconds)
 {
     std::lock_guard<std::mutex> lock(m_dbMutex);
+    evictExpiredKeys();
+
     bool exists = (m_kvStore.find(key)    != m_kvStore.end()) 
                   or (m_hashStore.find(key)  != m_hashStore.end()) 
                   or (m_listStore.find(key)  != m_listStore.end()) ;
@@ -115,6 +142,8 @@ bool VioletDB::expire(const std::string& key, int seconds)
 bool VioletDB::rename(const std::string& oldKey, const std::string& newKey)
 {
     std::lock_guard<std::mutex> lock(m_dbMutex);
+    evictExpiredKeys();
+    
     bool found = false;
 
     auto oldKV = m_kvStore.find(oldKey);

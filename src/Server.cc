@@ -19,7 +19,7 @@ static void signalHandler(int signum)
 {
     if(g_server)
     {
-        std::cout<<"Caught the signal "<<signum<< "Shutting down \n";
+        std::cout<<" >> Caught the signal ["<<signum<<"]\nShutting down...\n";
         g_server->shutdown();
     }
 
