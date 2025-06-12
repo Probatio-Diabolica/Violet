@@ -129,7 +129,6 @@ static std::string listGetAll(const std::vector<std::string>& tokens, VioletDB& 
     {
         oss << '$' << el.size() << "\r\n" << el << "\r\n";
     }
-
     return oss.str();
 }
 
@@ -247,14 +246,16 @@ static std::string listSetAtIndex(const std::vector<std::string>& tokens, Violet
     if(tokens.size() < 4) return "-error: missing <key> <index> <value>\r\n";
     
     try {
+
         int idx = std::stoi(tokens[2]);
         const std::string & key = tokens[1];
         const std::string& value = tokens[3];
         if(db.lset(key, idx, value)) return ":done\r\n";
+        else return "-error: failed to set value\r\n"; 
     } 
     catch (const std::exception& ) 
     {
-        return "error: invalid <index>\r\n";    
+        return "-error: invalid <index>\r\n";    
     }
 
 }
@@ -275,7 +276,7 @@ static std::string processHashSet(const std::vector<std::string>& tokens, Violet
 //Gets the value of the hash field and then, if found, returns it as bulk string else returns $-1   
 static std::string processHashGet(const std::vector<std::string>& tokens, VioletDB& db)
 {
-    if(tokens.size() < 3) return "-error: missing\r\n";
+    if(tokens.size() < 3) return "-error: missing <key> <field>\r\n";
 
     std::string value;
     
@@ -337,10 +338,10 @@ static std::string processHashKeys(const std::vector<std::string>& tokens, Viole
 static std::string processHashValues(const std::vector<std::string>& tokens, VioletDB& db)
 {
     if(tokens.size() < 2) return "-error:  missing <key>\r\n";
-
     const auto& values = db.hvals(tokens[1]);
     std::ostringstream oss;
-    for(const auto& val : values)
+    oss << '*' << values.size() << "\r\n";
+    for(const auto& val: values)
     {
         oss << '$' << val.size() << "\r\n" << val << "\r\n";
     }
@@ -359,7 +360,7 @@ static std::string processHashLength(const std::vector<std::string>& tokens, Vio
 
 static std::string processHashMultiSet(const std::vector<std::string>& tokens, VioletDB& db)
 {
-    if(tokens.size() < 4 or (tokens.size()%2)==1) return "-error: expected <key> followed by <field> <value> pairs\r\n";
+    if(tokens.size() < 4 or (tokens.size()%2)==1) return "-error: expected <key> <field> <value> pairs\r\n";
     
     std::vector<std::pair<std::string,std::string>> fieldValues;
 

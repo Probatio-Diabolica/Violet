@@ -416,6 +416,7 @@ bool VioletDB::lindex(const std::string& key, int index, std::string& value)
 bool VioletDB::lset(const std::string& key, int index, const std::string& value)
 {
     std::lock_guard lock(m_dbMutex);
+
     auto it = m_listStore.find(key);
     if(it == m_listStore.end()) return false;
 
@@ -423,6 +424,7 @@ bool VioletDB::lset(const std::string& key, int index, const std::string& value)
     if(index < 0 ) index += list.size();
     if(index < 0 or index >= static_cast<int>(list.size())) return false;
 
+    list[index] = value;
     return true;
 }
 
