@@ -6,7 +6,7 @@ Violet is a lightweight, Redis-inspired in-memory key–value store supporting s
 ## Supported Commands
 works in upper and lower cases.
 ### Common
-* **STATUS**: `status` → returns connection status
+* **STATUS**: `STATUS` → returns connection status
 * **ECHO**: `ECHO <msg>` → `<msg>`
 * **FLUSHALL**: `FLUSHALL` → clear all data
 
@@ -38,26 +38,35 @@ works in upper and lower cases.
 * **HVALS**: `HVALS <key>` → all values
 * **HGETALL**: `HGETALL <key>` → field/value pairs
 * **HMSET**: `HMSET <key> <f1> <v1> [f2 v2 ...]`
+---
 
+## Build and Run
 
-# Build and run
-* Clone the repo and run the build script. This will set up the client too. 
-```bash
-./buildall.sh```
+To get Violet and its client, Red, up and running:
 
-* if you want only the server run the 
-```bash
-./build.sh```
+* **Full Build (Server and Client):**
+    * Clone the Violet repository.
+    * Run the `buildall.sh` script from the root directory. This will compile both the Violet server and automatically clone and build the Red client, placing its executable in Violet's `build/` directory.
 
-* Navigate to the build/ directory and launch the server and the client 
-```bash
-./violet <port [optional]>
-./red <port [same as server, drop if none]>
-```
+    ```bash
+    ./buildall.sh
+    ```
 
+* **Server-Only Build:**
+    * If you only need the Violet server, you can use the dedicated build script:
 
+    ```bash
+    ./build.sh
+    ```
 
+* **Launching the Server and Client:**
+    * After building, navigate to the `build/` directory.
+    * You can then launch the Violet server and the Red client. Ensure you specify the same port if you want them to communicate.
 
+    ```bash
+    ./violet <port [optional]>
+    ./red <port [same as server, drop if none]>
+    ```
 
 ---
 
