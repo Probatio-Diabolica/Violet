@@ -1,58 +1,61 @@
 #!/bin/bash
 
-# Exit immediately if any command fails. Because we don't have all day.
 set -e
 
 # --- Configuration ---
 RED_REPO_URL="https://github.com/Probatio-Diabolica/Red"
-RED_DIR="Red" # Directory where Red will be cloned
-# Assuming this script is run from the Violet project's root,
-# and Violet's build directory is simply 'build/'.
-VIOLET_BUILD_DIR="build"
+RED_DIR="Red"                # Directory where Red will be cloned, relative to Violet's root
+VIOLET_BUILD_DIR="build"     # Violet's main build directory, relative to Violet's root
 
-echo "--- Building Red Client for Violet ---"
-echo "Starting the complex task of cloning and compiling your client, BTW."
+echo "--- Initiating Comprehensive Build: Violet Server and Red Client ---"
 
-# Step 1: Clone the Red repository
+echo "Building Violet server using its dedicated build script..."
+
+if [ ! -f "./build.sh" ]; then
+    echo "Error: Violet's 'build.sh' script not found. Ensure you are in the Violet project root."
+    exit 1
+fi
+./build.sh
+echo "Violet server build completed."
+
+echo "Cloning and building Red client..."
+
 if [ -d "$RED_DIR" ]; then
-    echo "Directory '$RED_DIR' already exists. Removing it to ensure a clean clone. Consistency is key, even for you."
+    echo "Removing existing '$RED_DIR' directory for a clean build."
     rm -rf "$RED_DIR"
 fi
 echo "Cloning $RED_REPO_URL into $RED_DIR..."
 git clone "$RED_REPO_URL"
 
-# Step 2: Build the Red package
-echo "Navigating into '$RED_DIR' to initiate the build process..."
-pushd "$RED_DIR" # Save current directory, then change into Red's directory
+echo "Entering '$RED_DIR' to build the Red client using its own build script."
+pushd "$RED_DIR"
 
-# Create and enter the build directory within Red.
-# Because even simple projects need a proper build setup.
-mkdir -p build
-cd build
+if [ ! -f "./build.sh" ]; then
+    echo "Error: Red's 'build.sh' script not found inside '$RED_DIR'. Red build cannot proceed."
+    popd # Return to Violet's root before exiting
+    exit 1
+fi
+./build.sh
 
-echo "Running CMake for Red. Don't worry, it's almost automatic."
-cmake ..
+RED_EXECUTABLE_PATH="build/red"
 
-echo "Compiling Red. This is where the magic (or errors) happens."
-make
-
-# Basic sanity check: did the executable actually get created?
-if [ ! -f "red" ]; then
-    echo "Error: 'red' executable not found in '$RED_DIR/build/'. Your build likely failed. Shocking."
+if [ ! -f "$RED_EXECUTABLE_PATH" ]; then
+    echo "Error: 'red' executable not found in '$RED_DIR/$RED_EXECUTABLE_PATH'. Red client build failed."
+    popd # Return to Violet's root before exiting
     exit 1
 fi
 
-popd # Return to the original directory (Violet's root)
+popd
+echo "Returned to Violet's root directory."
 
-# Step 3: Move the "red" executable to Violet's build directory
-echo "Moving the glorious 'red' executable to Violet's build directory ($VIOLET_BUILD_DIR)..."
+# --- Step 3: Move Red executable to Violet's build directory ---
+echo "Moving 'red' executable from '$RED_DIR/$RED_EXECUTABLE_PATH' to '$VIOLET_BUILD_DIR/'."
 
-# Ensure Violet's build directory exists. Don't assume anything.
 mkdir -p "$VIOLET_BUILD_DIR"
 
-mv "$RED_DIR/build/red" "$VIOLET_BUILD_DIR/"
+mv "$RED_DIR/$RED_EXECUTABLE_PATH" "$VIOLET_BUILD_DIR/"
+echo "'red' executable successfully moved to '$VIOLET_BUILD_DIR'."
 
-echo "--- Build Complete ---"
-echo "Successfully cloned, built Red, and moved 'red' executable to '$VIOLET_BUILD_DIR'."
-echo "You can now run '$VIOLET_BUILD_DIR/red' from this directory."
-echo "You're welcome, Arch user."
+echo "--- All Builds Completed ---"
+echo "Violet server and Red client are now built and ready."
+echo "Executables 'violet' and 'red' can be found in the '$VIOLET_BUILD_DIR' directory."
