@@ -45,24 +45,19 @@ works in upper and lower cases.
 To get Violet and its client, Red, up and running:
 
 * **Full Build (Server and Client):**
-    * Clone the Violet repository.
-    * Run the `buildall.sh` script from the root directory. This will compile both the Violet server and automatically clone and build the Red client, placing its executable in Violet's `build/` directory.
-
+    Clone the repo and run:
     ```bash
     ./buildall.sh
     ```
 
 * **Server-Only Build:**
-    * If you only need the Violet server, you can use the dedicated build script:
-
+    If you only need the server:
     ```bash
     ./build.sh
     ```
 
-* **Launching the Server and Client:**
-    * After building, navigate to the `build/` directory.
-    * You can then launch the Violet server and the Red client. Ensure you specify the same port if you want them to communicate.
-
+* **Launch:**
+    Navigate to `build/` and run:
     ```bash
     ./violet <port [optional]>
     ./red <port [same as server, drop if none]>
