@@ -3,48 +3,56 @@ Violet is an in-memory key–value database, which can be used as a distributed 
 
 ---
 
-## Misc Commands
+## Supported Commands
 
-* **STATUS**: Returns server status (e.g., running or shutting down).
-* **ECHO <message>**: Returns the message back—used for testing connectivity.
-* **FLUSHALL**: Clears all keys from all databases.
+### Common
+* **PING**: `status` → returns connection status
+* **ECHO**: `ECHO <msg>` → `<msg>`
+* **FLUSHALL**: `FLUSHALL` → clear all data
+
+### Key/Value
+* **SET**: `SET <key> <value>` → store string
+* **GET**: `GET <key>` → retrieve string or nil
+* **KEYS**: `KEYS *` → list all keys
+* **TYPE**: `TYPE <key>` → `string`/`list`/`hash`/`none`
+* **DEL/UNLINK**: `DEL <key>` → delete key
+* **EXPIRE**: `EXPIRE <key> <seconds>` → set TTL
+* **RENAME**: `RENAME <old> <new>` → rename key
+
+### Lists
+* **LGET**: `LGET <key>` → all elements
+* **LLEN**: `LLEN <key>` → length
+* **LPUSH/RPUSH**: `LPUSH <key> <v1> [v2 ...]` / `RPUSH` → push multiple
+* **LPOP/RPOP**: `LPOP <key>` / `RPOP <key>` → pop one
+* **LREM**: `LREM <key> <count> <value>` → remove occurrences
+* **LINDEX**: `LINDEX <key> <index>` → get element
+* **LSET**: `LSET <key> <index> <value>` → set element
+
+### Hashes
+* **HSET**: `HSET <key> <field> <value>`
+* **HGET**: `HGET <key> <field>`
+* **HEXISTS**: `HEXISTS <key> <field>`
+* **HDEL**: `HDEL <key> <field>`
+* **HLEN**: `HLEN <key>` → field count
+* **HKEYS**: `HKEYS <key>` → all fields
+* **HVALS**: `HVALS <key>` → all values
+* **HGETALL**: `HGETALL <key>` → field/value pairs
+* **HMSET**: `HMSET <key> <f1> <v1> [f2 v2 ...]`
 
 ---
 
-## Key–Value Operations
+## Design & Architecture
 
-* **SET <key> <value>**: Stores the value against the specified key.
-* **GET <key>**: Retrieves the value for a given key.
-* **KEYS**: Lists all keys currently stored.
-* **TYPE <key>**: Returns the data type of the given key (string, list, hash, or none).
-
----
-
-## List Operations
-
-* **LGET <key>**: Returns all elements in the list.
-* **LLEN <key>**: Returns the length of the list.
-* **LPUSH <key> <value>**: Pushes a value to the left (front) of the list.
-* **RPUSH <key> <value>**: Pushes a value to the right (back) of the list.
-* **LPOP <key>**: Removes and returns the leftmost element.
-* **RPOP <key>**: Removes and returns the rightmost element.
-* **LREM <key> <count> <value>**: Removes elements equal to value (count > 0 from left, < 0 from right, 0 = all).
-* **LINDEX <key> <index>**: Gets the list element at the specified index.
-* **LSET <key> <index> <value>**: Sets the element at index to the new value.
-
----
-
-## Hash Operations
-
-* **HSET <key> <field> <value>**: Sets a field in the hash to a value.
-* **HGET <key> <field>**: Gets the value of a field in the hash.
-* **HEXISTS <key> <field>**: Checks if a field exists in the hash.
-* **HDEL <key> <field>**: Deletes a field from the hash.
-* **HGETALL <key>**: Returns all fields and values in the hash.
-* **HKEYS <key>**: Returns all field names in the hash.
-* **HVALS <key>**: Returns all field values in the hash.
-* **HLEN <key>**: Returns the number of fields in the hash.
-* **HMSET <key> <field1> <val1> ...**: Sets multiple field-value pairs in one go.
+* **Concurrency:** Each client is handled in its own `std::thread`.
+* **Synchronization:** A single `std::mutex db_mutex` guards all in-memory stores.
+* **Data Stores:**
+    * `kv_store` (`unordered_map<string,string>`) for strings
+    * `list_store` (`unordered_map<string,vector<string>>`) for lists
+    * `hash_store` (`unordered_map<string,unordered_map<string,string>>`) for hashes
+* **Expiration:** Lazy eviction on each access via `purgeExpired()`, plus TTL map `expiry_map`.
+* **Persistence:** Simplified RDB: text‐based dump/load in `dump.my_rdb`.
+* **Singleton Pattern:** `RedisDatabase::getInstance()` enforces one shared instance.
+* **RESP Parsing:** Custom parser in `RedisCommandHandler` supports both inline and array formats.
 
 ---
 
@@ -55,7 +63,8 @@ To build,
 ---
 
 # Dependencies
- **[red](https://github.com/Probatio-Diabolica/Red)**: The supported client for Violet.
+
+* **[red](https://github.com/Probatio-Diabolica/Red)**: The official client for Violet.
 
 ---
 
