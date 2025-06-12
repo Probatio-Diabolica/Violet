@@ -55,7 +55,7 @@ To build,
 ---
 
 # Dependencies
-
+ **[red](https://github.com/Probatio-Diabolica/Red)**: The supported client for Violet.
 
 ---
 

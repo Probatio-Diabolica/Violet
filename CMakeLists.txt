@@ -17,4 +17,4 @@ add_executable(violet ${SOURCE_FILES})
 
 target_include_directories(violet PRIVATE include)
 
-target_compile_options(violet PRIVATE -O3 -march=native -Wall -Wextra)
+target_compile_options(violet PRIVATE -O3 -march=native)
