@@ -1,12 +1,12 @@
 # Violet
-Violet is an in-memory key–value database, which can be used as a distributed cache and message broker, with optional durability.
+Violet is a lightweight, Redis-inspired in-memory key–value store supporting strings, lists, and hashes with optional persistence. Ideal for caching, pub-sub systems, or prototyping distributed workflows.
 
 ---
 
 ## Supported Commands
-
+works in upper and lower cases.
 ### Common
-* **PING**: `status` → returns connection status
+* **STATUS**: `status` → returns connection status
 * **ECHO**: `ECHO <msg>` → `<msg>`
 * **FLUSHALL**: `FLUSHALL` → clear all data
 
@@ -39,37 +39,34 @@ Violet is an in-memory key–value database, which can be used as a distributed 
 * **HGETALL**: `HGETALL <key>` → field/value pairs
 * **HMSET**: `HMSET <key> <f1> <v1> [f2 v2 ...]`
 
----
 
-## Design & Architecture
+# Build and run
+* Clone the repo and run the build script. This will set up the client too. 
+```bash
+./buildall.sh```
 
-* **Concurrency:** Each client is handled in its own `std::thread`.
-* **Synchronization:** A single `std::mutex db_mutex` guards all in-memory stores.
-* **Data Stores:**
-    * `kv_store` (`unordered_map<string,string>`) for strings
-    * `list_store` (`unordered_map<string,vector<string>>`) for lists
-    * `hash_store` (`unordered_map<string,unordered_map<string,string>>`) for hashes
-* **Expiration:** Lazy eviction on each access via `purgeExpired()`, plus TTL map `expiry_map`.
-* **Persistence:** Simplified RDB: text‐based dump/load in `dump.my_rdb`.
-* **Singleton Pattern:** `RedisDatabase::getInstance()` enforces one shared instance.
-* **RESP Parsing:** Custom parser in `RedisCommandHandler` supports both inline and array formats.
+if you want only the server run the ```bash
+./build.sh```
 
----
+* Navigate to the build/ directory and launch the server and the client ```bash
+./violet <port [optional]>
+./red <port [same as server, drop if none]>
+```
 
-# Build
-To build,
->* run the ```build.sh``` file.
+
+
+
 
 ---
 
 # Dependencies
 
-* **[red](https://github.com/Probatio-Diabolica/Red)**: The official client for Violet.
+* **[Red](https://github.com/Probatio-Diabolica/Red)**: The custom client for Violet.
 
 ---
 
 # Requirements
 To build and run, you need:
->* Unix/Unix-like system or WSL
+>* Unix/Unix-like system (Linux/macOS/WSL)
 >* gcc or clang
 >* cmake
