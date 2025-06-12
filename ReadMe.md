@@ -45,7 +45,7 @@ works in upper and lower cases.
 ```bash
 ./buildall.sh```
 
-if you want only the server run the ```bash
+* if you want only the server run the ```bash
 ./build.sh```
 
 * Navigate to the build/ directory and launch the server and the client ```bash
