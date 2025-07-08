@@ -6,6 +6,8 @@
 #include <fstream>
 #include <ios>
 #include <vector>
+#include <algorithm>
+
 
 VioletDB& VioletDB::getInstance()
 {

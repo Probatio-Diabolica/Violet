@@ -1,0 +1,11 @@
+
+build/
+*.dbz
+*.o
+*.a
+*.so
+*.swp
+*.log
+CMakeFiles/
+CMakeCache.txt
+*.cmake

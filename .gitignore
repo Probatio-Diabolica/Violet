@@ -5,5 +5,7 @@ test/
 .cache/
 .vs
 Red/
+data/
+
 #personal files
 topics.txt
